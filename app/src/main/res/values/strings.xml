@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CoolWeather</string>
+    <string name="test_title">Test Title</string>
 </resources>
