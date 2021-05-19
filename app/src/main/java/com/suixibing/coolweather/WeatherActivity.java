@@ -1,6 +1,9 @@
 package com.suixibing.coolweather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -9,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -33,7 +37,13 @@ public class WeatherActivity extends AppCompatActivity {
 
     private ImageView bingPicImage;
 
+    private DrawerLayout drawerLayout;
+
+    private SwipeRefreshLayout swipeRefreshLayout;
+
     private ScrollView weatherLayout;
+
+    private Button navButton;
 
     private TextView titleCity;
 
@@ -55,6 +65,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView sportText;
 
+    private boolean debugFlag = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,7 +78,9 @@ public class WeatherActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_weather);
 
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         weatherLayout = (ScrollView) findViewById(R.id.weather_layout);
+        navButton = (Button) findViewById(R.id.nav_button);
         titleCity = (TextView) findViewById(R.id.title_city);
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
         degreeText = (TextView) findViewById(R.id.degree_text);
@@ -78,15 +92,17 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText = (TextView) findViewById(R.id.car_wash_text);
         sportText = (TextView) findViewById(R.id.sport_text);
 
+        final String weatherId;
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         if (weatherString != null) {
             // 有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            weatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         } else {
             // 无缓存时去服务器查询天气
-            String weatherId = getIntent().getStringExtra("weather_id");
+            weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.VISIBLE);
             requestWeather(weatherId);
         }
@@ -98,14 +114,46 @@ public class WeatherActivity extends AppCompatActivity {
         } else {
             loadBingPic();
         }
+
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.design_default_color_primary);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(weatherId);
+            }
+        });
+
+        navButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+    }
+
+    public void changeWeather(final String weatherId) {
+        drawerLayout.closeDrawers();
+        swipeRefreshLayout.setRefreshing(true);
+        requestWeather(weatherId);
     }
 
     /*
      *  根据天气id请求城市天气信息
      */
     private void requestWeather(final String weatherId) {
-        String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId
-                + "&key=" + R.string.api_key;
+        String weatherUrl = getResources().getString(R.string.api_server)
+                + "/api/weather?cityid=" + weatherId
+                + "&key=" + getResources().getString(R.string.api_key);
+        if (getResources().getBoolean(R.bool.debugging)) {
+            weatherUrl = getResources().getString(R.string.api_server) + "/api/weather/debug";
+            if (debugFlag) {
+                weatherUrl += "/1";
+                debugFlag = false;
+            } else {
+                debugFlag = true;
+            }
+        }
         HttpUtil.sendOkHttpRequest(weatherUrl.trim(), new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {
@@ -115,6 +163,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(WeatherActivity.this,
                                 "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -136,6 +185,7 @@ public class WeatherActivity extends AppCompatActivity {
                             Toast.makeText(WeatherActivity.this,
                                     "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -188,7 +238,7 @@ public class WeatherActivity extends AppCompatActivity {
      *  加载必应每日一图
      */
     private void loadBingPic() {
-        String requestBingPic = "http://guolin.tech/api/bing_pic";
+        String requestBingPic = getResources().getString(R.string.api_server) + "/api/bing_pic";
         HttpUtil.sendOkHttpRequest(requestBingPic, new Callback() {
             @Override
             public void onFailure(@NotNull Call call, @NotNull IOException e) {

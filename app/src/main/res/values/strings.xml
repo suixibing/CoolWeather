@@ -7,6 +7,8 @@
     <string name="suggestion_area_title">生活建议</string>
 
     <string name="api_key">ed44f3e83d1c4b9ab1cf3c849b21d8c6</string>
+    <string name="api_server">http://www.suixibing.tech</string>
+    <bool name="debugging">true</bool>
 
 <!--    test数据-->
     <string name="test_title">北京</string>
