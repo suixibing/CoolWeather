@@ -1,4 +1,26 @@
 <resources>
     <string name="app_name">CoolWeather</string>
-    <string name="test_title">Test Title</string>
+    <string name="forecast_area_title">天气预报</string>
+    <string name="aqi_area_title">空气质量</string>
+    <string name="aqi_index">AQI 指数</string>
+    <string name="pm25_index">PM2.5 指数</string>
+    <string name="suggestion_area_title">生活建议</string>
+
+    <string name="api_key">ed44f3e83d1c4b9ab1cf3c849b21d8c6</string>
+
+<!--    test数据-->
+    <string name="test_title">北京</string>
+    <string name="test_update_time">14:28</string>
+    <string name="test_degree_text">24 °C</string>
+    <string name="test_weather_info_text">多云</string>
+    <string name="test_date_text">2021-05-19</string>
+    <string name="test_info_text">多云</string>
+    <string name="test_max_text">32</string>
+    <string name="test_min_text">19</string>
+    <string name="test_aqi_text">59</string>
+    <string name="test_pm25_text">61</string>
+    <string name="test_comfort_text">舒适度: 白天不太热也不太冷，风力不大，相信您在这样的天气条件下，应会感到比较清爽和舒适。</string>
+    <string name="test_car_wash_text">洗车指数: 较适宜洗车，未来一天无雨，风力较小，擦洗一新的汽车至少能保持一天。</string>
+    <string name="test_sport_text">运动建议: 天气较好，赶快投身大自然参与户外运动，尽情感受运动的快乐吧。</string>
+
 </resources>

@@ -1,6 +1,7 @@
 package com.suixibing.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -116,6 +117,12 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(position).getWeatherId();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
@@ -136,10 +143,10 @@ public class ChooseAreaFragment extends Fragment {
      *  查询全国所有的省，优先从数据库查询，数据库中没有再通过网络查询
      */
     private void queryProvinces() {
-        titleText.setText("中国");
-        backButton.setVisibility(View.GONE);
         provinceList = LitePal.findAll(Province.class);
         if (provinceList.size() > 0) {
+            titleText.setText("中国");
+            backButton.setVisibility(View.GONE);
             dataList.clear();
             for (Province province : provinceList) {
                 dataList.add(province.getProvinceName());
@@ -157,11 +164,12 @@ public class ChooseAreaFragment extends Fragment {
      *  查询目标省所有的城市，优先从数据库查询，数据库中没有再通过网络查询
      */
     private void queryCities() {
-        titleText.setText(selectedProvince.getProvinceName());
-        backButton.setVisibility(View.VISIBLE);
         cityList = LitePal.where("provinceid = ?",
                 String.valueOf(selectedProvince.getId())).find(City.class);
         if (cityList.size() > 0) {
+            titleText.setText(selectedProvince.getProvinceName());
+            backButton.setVisibility(View.VISIBLE);
+
             dataList.clear();
             for (City city : cityList) {
                 dataList.add(city.getCityName());
@@ -180,11 +188,12 @@ public class ChooseAreaFragment extends Fragment {
      *  查询目标城市所有的县，优先从数据库查询，数据库中没有再通过网络查询
      */
     private void queryCounties() {
-        titleText.setText(selectedCity.getCityName());
-        backButton.setVisibility(View.VISIBLE);
         countyList = LitePal.where("cityid = ?",
                 String.valueOf(selectedCity.getId())).find(County.class);
         if (countyList.size() > 0) {
+            titleText.setText(selectedCity.getCityName());
+            backButton.setVisibility(View.VISIBLE);
+
             dataList.clear();
             for (County county : countyList) {
                 dataList.add(county.getCountyName());
