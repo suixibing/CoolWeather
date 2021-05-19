@@ -5,6 +5,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.suixibing.coolweather.gson.Forecast;
 import com.suixibing.coolweather.gson.Weather;
+import com.suixibing.coolweather.service.AutoUpdateService;
 import com.suixibing.coolweather.util.HttpUtil;
 import com.suixibing.coolweather.util.Utility;
 
@@ -64,8 +66,6 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView carWashText;
 
     private TextView sportText;
-
-    private boolean debugFlag = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,13 +146,8 @@ public class WeatherActivity extends AppCompatActivity {
                 + "/api/weather?cityid=" + weatherId
                 + "&key=" + getResources().getString(R.string.api_key);
         if (getResources().getBoolean(R.bool.debugging)) {
-            weatherUrl = getResources().getString(R.string.api_server) + "/api/weather/debug";
-            if (debugFlag) {
-                weatherUrl += "/1";
-                debugFlag = false;
-            } else {
-                debugFlag = true;
-            }
+            weatherUrl = Utility.getRandomWeatherURLForTest(getResources()
+                    .getString(R.string.api_server));
         }
         HttpUtil.sendOkHttpRequest(weatherUrl.trim(), new Callback() {
             @Override
@@ -196,10 +191,10 @@ public class WeatherActivity extends AppCompatActivity {
     /*
      *  处理并展示Weather中的数据
      */
-    private void showWeatherInfo(Weather weather) {
+    private void showWeatherInfo(@NotNull Weather weather) {
         String cityName = weather.basic.cityName;
         titleCity.setText(cityName);
-        String updateTime = weather.basic.update.updateTime.split(" ")[0];
+        String updateTime = weather.basic.update.updateTime.split(" ")[1];
         titleUpdateTime.setText(updateTime);
         String degree = weather.now.temperature + " °C";
         degreeText.setText(degree);
@@ -232,6 +227,9 @@ public class WeatherActivity extends AppCompatActivity {
         String sport = "运动建议: " + weather.suggestion.sport.info;
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+
+        Intent intent = new Intent(WeatherActivity.this, AutoUpdateService.class);
+        startService(intent);
     }
 
     /*

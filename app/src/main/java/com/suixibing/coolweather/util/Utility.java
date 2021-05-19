@@ -12,6 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Random;
+
 public class Utility {
 
     /*
@@ -95,5 +97,14 @@ public class Utility {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /*
+     *  随机获取一个测试用的天气信息URL
+     */
+    public static String getRandomWeatherURLForTest(String serverUrl) {
+        Random random = new Random();
+        String weatherUrl = serverUrl + "/api/weather/debug/" + random.nextInt(20);
+        return weatherUrl;
     }
 }
